@@ -1,6 +1,6 @@
 package src.com.ransomer.rmqon;
 
-import com.ransomer.rabbitmqonandroid.R;
+import com.ransomer.rmqona.R;
 
 import android.content.Context;
 import android.content.Intent;

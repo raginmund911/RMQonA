@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 public class MQService extends Service{
@@ -170,11 +172,11 @@ public class MQService extends Service{
        
 	
      }
-
+/*
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
 		return null;
 	}  
-  
+  */
 }
