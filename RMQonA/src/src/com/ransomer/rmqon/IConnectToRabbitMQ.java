@@ -1,11 +1,10 @@
 package src.com.ransomer.rmqon;
 
+import java.io.IOException;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.ransomer.rabbitmqonandroid.MyApplication;
-
-import java.io.IOException;
 
 /**
  * Base class for objects that connect to a RabbitMQ Broker
@@ -13,13 +12,14 @@ import java.io.IOException;
 public abstract class IConnectToRabbitMQ {
       public String mServer;
       public String mExchange;
+       
  
       protected Channel mModel = null;
       protected Connection  mConnection;
  
       protected boolean Running ;
  
-      protected String MyExchangeType ;
+      protected  String MyExchangeType ;
  
       /**
        *
@@ -33,16 +33,14 @@ public abstract class IConnectToRabbitMQ {
           mExchange = exchange;
           MyExchangeType = exchangeType;
       }
-      
-      //close channel and connection
+ 
       public void Dispose()
       {
           Running = false;
  
-            try {///if there is an open connection, close it
+            try {
                 if (mConnection!=null)
                     mConnection.close();
-                //if there is an open channel, close it
                 if (mModel != null)
                     mModel.abort();
             } catch (IOException e) {
@@ -58,21 +56,15 @@ public abstract class IConnectToRabbitMQ {
        */
       public boolean connectToRabbitMQ()
       {
-    	  ///Check if a reference to the channel exists and if it's open
           if(mModel!= null && mModel.isOpen() )//already declared
               return true;
           try
           {
-        	MyApplication.mFactory = new ConnectionFactory();
-      	    MyApplication.mFactory.setHost("137.140.3.151");
-      	    MyApplication.mFactory.setUsername("guest");
-      	    MyApplication.mFactory.setPassword("guest");
-              //factory.setPort(5672);
-              System.out.println(""+MyApplication.mFactory.getHost()+MyApplication.mFactory.getPort()+MyApplication.mFactory.getRequestedHeartbeat()+MyApplication.mFactory.getUsername());
-              MyApplication.mConnection = MyApplication.mFactory.newConnection();
+              ConnectionFactory connectionFactory = new ConnectionFactory();
+              connectionFactory.setHost(mServer);
+              mConnection = connectionFactory.newConnection();
               mModel = mConnection.createChannel();
               mModel.exchangeDeclare(mExchange, MyExchangeType, true);
-              
  
               return true;
           }

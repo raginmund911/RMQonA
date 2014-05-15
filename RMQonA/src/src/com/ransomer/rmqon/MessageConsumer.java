@@ -68,15 +68,17 @@ public class MessageConsumer extends IConnectToRabbitMQ{
        {
  
            try {
-               mQueue = mModel.queueDeclare().getQueue();
+               
+        	   mQueue = "info_all";
+        	   //mQueue = mModel.queueDeclare().getQueue("info_all"); //creates a generic queue otherwise?
                MySubscription = new QueueingConsumer(mModel);
                mModel.basicConsume(mQueue, false, MySubscription);
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
             }
-             if (MyExchangeType == "fanout")
-                   AddBinding("");//fanout has default binding
+             if (MyExchangeType == "topic")
+                   AddBinding("INFO.#");	//binding key for queue info_all
  
             Running = true;
             mConsumeHandler.post(mConsumeRunner);

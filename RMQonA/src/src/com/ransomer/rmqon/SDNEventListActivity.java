@@ -1,6 +1,10 @@
 package src.com.ransomer.rmqon;
 
+import java.io.UnsupportedEncodingException;
 
+import com.ransomer.rmqona.R;
+
+import src.com.ransomer.rmqon.MessageConsumer;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
@@ -12,6 +16,7 @@ import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
+import android.widget.TextView;
 
 
 
@@ -50,14 +55,19 @@ public class SDNEventListActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_sdnevent_list);
         Log.d("SDNEventListActivity", "Activity created");
         
+        private MessageConsumer mInfo;
+        private MessageConsumer mLogService;
+        private MessageConsumer mRestlet;
+        private MessageConsumer	mServerRouter;
+        private MessageConsumer	mVirtualHost;
         
         
         //Get SDN events from a new data model
-        SDNEventQueue Info_All = new SDNEventQueue("Info(All)");
-        SDNEventQueue Debug_LogService = new SDNEventQueue("Debug.LogService");
-        SDNEventQueue Debug_Restlet = new SDNEventQueue("Debug.Restlet");
-        SDNEventQueue Debug_ServerRouter = new SDNEventQueue("Debug.ServerRouter");
-        SDNEventQueue Debug_VirtualHost = new SDNEventQueue("Debug.VirtualHost");
+        SDNEventQueue infoAll = new SDNEventQueue("Info(All)");
+        SDNEventQueue debugLogService = new SDNEventQueue("Debug.LogService");
+        SDNEventQueue debugRestlet = new SDNEventQueue("Debug.Restlet");
+        SDNEventQueue debugServerRouter = new SDNEventQueue("Debug.ServerRouter");
+        SDNEventQueue debugVirtualHost = new SDNEventQueue("Debug.VirtualHost");
         
 		if (findViewById(R.id.sdnevent_detail_container) != null) {
 			// The detail container view will be present only in the
@@ -74,8 +84,32 @@ public class SDNEventListActivity extends FragmentActivity implements
 		}
 		
 		
-        startService(new Intent(this,MQService.class));
-
+        //startService(new Intent(this,MQService.class));
+		//The output TextView we'll use to display messages
+        mOutput =  (TextView) findViewById(R.id.sdnevent_detail);
+ 
+        //Create the consumer
+        mConsumer = new MessageConsumer("137.140.3.151",
+                "sdn_events",
+                "topic");
+ 
+        //Connect to broker
+        mConsumer.connectToRabbitMQ();
+ 
+        //register for messages
+        mConsumer.setOnReceiveMessageHandler(new OnReceiveMessageHandler(){
+ 
+            public void onReceiveMessage(byte[] message) {
+                String text = "";
+                try {
+                    text = new String(message, "UTF8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+ 
+                mOutput.append("\n"+text);
+            }
+        });
 				
 		};
 		
@@ -119,6 +153,7 @@ public class SDNEventListActivity extends FragmentActivity implements
 	@Override
 	public void onResume() {
 		super.onResume();
+		mConsumer.connectToRabbitMQ();
 		Log.d("SDNEventListActivity", "Activity Resumed");
 	}
 	
@@ -132,6 +167,7 @@ public class SDNEventListActivity extends FragmentActivity implements
 	 @Override
 	 public void onPause() {
 		 super.onPause();
+		 mConsumer.dispose();
 		 Log.d("SDNEventListActivity", "Activity Paused...");
 	     
 	 }
